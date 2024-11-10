@@ -1,30 +1,99 @@
 <!-- src/main/resources/templates/chat.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>Chat Room</title>
 </head>
 <body>
-<h1>Chat Room</h1>
-<div id="chatBox"></div>
-<input id="messageInput" type="text" placeholder="Type a message..."/>
-<button onclick="sendMessage()">Send</button>
+<h1 id="roomName" th:text="'Room: ' + ${roomName}">Room: [[${roomName}]]</h1>
+<div id="chatSection">
+    <div id="chatBox"></div>
+    <input id="messageInput" type="text" placeholder="Type a message..."/>
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="leaveRoom()">Leave Room</button>
+</div>
 
 <script>
-    var socket = new WebSocket("ws://localhost:8080/chat");
+    let socket;
+    let nickname;
+    let room;
 
-    socket.onmessage = function(event) {
-        var chatBox = document.getElementById("chatBox");
-        var newMessage = document.createElement("div");
-        newMessage.textContent = event.data;
-        chatBox.appendChild(newMessage);
-    };
+    document.addEventListener('DOMContentLoaded', (event) => {
+        nickname = localStorage.getItem('nickname');
+        room = new URL(window.location.href).searchParams.get('roomName');
+        if (!nickname || !room) {
+            alert("Please set a nickname and select a room first!");
+            window.location.href = "/";
+            return;
+        }
+
+        document.getElementById("roomName").textContent = "Room: " + room;
+        loadChatHistory();
+        initWebSocket();
+    });
+
+    function loadChatHistory() {
+        fetch(`/chat/history?roomId=${room}`)
+            .then(response => response.json())
+            .then(messages => {
+                const chatBox = document.getElementById("chatBox");
+                messages.forEach(message => {
+                    const newMessage = document.createElement("div");
+                    newMessage.textContent = message;
+                    chatBox.appendChild(newMessage);
+                });
+            })
+            .catch(error => console.error('Error loading chat history:', error));
+    }
+
+    function initWebSocket() {
+        socket = new WebSocket("ws://localhost:8080/chat/" + room);
+
+        socket.onmessage = function(event) {
+            var chatBox = document.getElementById("chatBox");
+            var newMessage = document.createElement("div");
+            newMessage.textContent = event.data;
+            chatBox.appendChild(newMessage);
+        };
+
+        socket.onopen = function() {
+            console.log("Connected to chat room: " + room);
+        };
+
+        socket.onclose = function() {
+            console.log("Disconnected from chat room: " + room);
+        };
+
+        socket.onerror = function(error) {
+            console.log("WebSocket error: " + error);
+        };
+    }
 
     function sendMessage() {
         var input = document.getElementById("messageInput");
-        socket.send(input.value);
-        input.value = '';
+        let message = nickname + ": " + input.value;
+        if (input.value && nickname) {
+            socket.send(message);
+            input.value = '';
+        }
+    }
+
+    function leaveRoom() {
+        if (socket) {
+            socket.close();
+            document.getElementById("chatBox").innerHTML = '';
+
+            // Add room to local storage
+            let rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+            if (!rooms.includes(room)) {
+                rooms.push(room);
+                localStorage.setItem('rooms', JSON.stringify(rooms));
+            }
+
+            localStorage.removeItem('room');
+            window.location.href = "/rooms";
+        }
     }
 </script>
 </body>

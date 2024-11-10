@@ -1,0 +1,33 @@
+<!-- src/main/resources/templates/rooms.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Rooms</title>
+</head>
+<body>
+<h1>Chat Rooms</h1>
+<div id="roomSection">
+  <form action="/createRoom" method="post">
+    <input name="roomName" type="text" placeholder="Enter room name"/>
+    <button type="submit">Create Room</button>
+  </form>
+
+  <ul id="roomList">
+    <li th:each="room : ${rooms}">
+      <a th:href="@{|/chat?roomName=${room.name}|}" th:text="${room.name}"></a>
+    </li>
+  </ul>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const nickname = localStorage.getItem('nickname');
+    if (!nickname) {
+      alert("Please set a nickname first!");
+      window.location.href = "/";
+    }
+  });
+</script>
+</body>
+</html>
