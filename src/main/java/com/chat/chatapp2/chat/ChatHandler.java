@@ -15,13 +15,13 @@ public class ChatHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String roomId = extractRoomId(session);
+        String roomId = RoomUtil.extractRoomId(session);
         roomSessions.computeIfAbsent(roomId, k -> new HashSet<>()).add(session);
     }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String roomId = extractRoomId(session);
+        String roomId = RoomUtil.extractRoomId(session);
 
         // Add message to chat history
         chatMessages.computeIfAbsent(roomId, k -> new ArrayList<>()).add(message.getPayload());
@@ -37,7 +37,7 @@ public class ChatHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        String roomId = extractRoomId(session);
+        String roomId = RoomUtil.extractRoomId(session);
         Set<WebSocketSession> sessions = roomSessions.get(roomId);
         if (sessions != null) {
             sessions.remove(session);
@@ -45,12 +45,6 @@ public class ChatHandler extends TextWebSocketHandler {
                 roomSessions.remove(roomId);
             }
         }
-    }
-
-    private String extractRoomId(WebSocketSession session) {
-        String path = session.getUri().getPath();
-        UriTemplate template = new UriTemplate("/chat/{roomId}");
-        return template.match(path).get("roomId");
     }
 
     public List<String> getMessagesByRoomId(String roomId) {

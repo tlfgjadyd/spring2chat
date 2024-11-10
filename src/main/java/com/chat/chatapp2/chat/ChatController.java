@@ -1,6 +1,6 @@
 package com.chat.chatapp2.chat;// ChatController.java
 import com.chat.chatapp2.chat.service.ChatRoomService;
-import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,11 +13,13 @@ import java.util.List;
 @Controller
 public class ChatController {
 
-    @Autowired
-    private ChatRoomService chatRoomService;
+    private final ChatRoomService chatRoomService;
+    private final ChatHandler chatHandler;
 
-    @Autowired
-    private ChatHandler chatHandler;
+    public ChatController(ChatRoomService chatRoomService, ChatHandler chatHandler) {
+        this.chatRoomService = chatRoomService;
+        this.chatHandler = chatHandler;
+    }
 
     @GetMapping("/")
     public String nicknamePage() {
