@@ -2,11 +2,16 @@ package com.chat.chatapp2.dao;
 
 import com.chat.chatapp2.dto.ChatRoom;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+
+
+
 import java.util.*;
 
 // 추후 DB 와 연결 시 query 문으로 대체 예정
 @Repository
+@Slf4j
 public class ChatRepository {
 
     private Map<String, ChatRoom> chatRoomMap;
@@ -56,9 +61,26 @@ public class ChatRepository {
     public String addUser(String roomId, String userName){
         ChatRoom room = chatRoomMap.get(roomId);
         String userUUID = UUID.randomUUID().toString();
+
+        // 아이디 중복 확인 후 userList 에 추가
         room.getUserlist().put(userUUID, userName);
 
         return userUUID;
+    }
+
+    // 채팅방 유저 이름 중복 확인
+    public String isDuplicateName(String roomId, String username){
+        ChatRoom room = chatRoomMap.get(roomId);
+        String tmp = username;
+
+        // 만약 userName 이 중복이라면 랜덤한 숫자를 붙임
+        while(room.getUserlist().containsValue(tmp)){
+            int ranNum = (int) (Math.random()*100)+1;
+
+            tmp = username+ranNum;
+        }
+
+        return tmp;
     }
 
     // 채팅방 유저 리스트 삭제
