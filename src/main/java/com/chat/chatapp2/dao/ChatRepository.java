@@ -4,9 +4,6 @@ import com.chat.chatapp2.dto.ChatRoom;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-
-
-
 import java.util.*;
 
 // 추후 DB 와 연결 시 query 문으로 대체 예정
@@ -74,6 +71,7 @@ public class ChatRepository {
         String tmp = username;
 
         // 만약 userName 이 중복이라면 랜덤한 숫자를 붙임
+        // 이때 랜덤한 숫자를 붙였을 때 getUserlist 안에 있는 닉네임이라면 다시 랜덤한 숫자 붙이기!
         while(room.getUserlist().containsValue(tmp)){
             int ranNum = (int) (Math.random()*100)+1;
 
